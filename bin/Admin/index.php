@@ -29,9 +29,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($rpc->checkRequestFormat($raw_data)) {
             $method = $raw_data->method;
-            if($method = "getDirector") {
-                if ($check->checkDataDirector($params)) {
+            if ($method == "getDirector") {
+                if ($check->checkDataToken($params)) {
                     echo $methods->getDirector($params);
+                } else {
+                    echo error(ERR_INVALID_PARAMS, $method);
+                }
+            } elseif ($method == "getPark") {
+                if ($check->checkDataToken($params)) {
+                    echo $methods->getPark($params);
+                } else {
+                    echo error(ERR_INVALID_PARAMS, $method);
+                }
+            } elseif ($method == "loginDirector") {
+                if ($check->checkDataLoginDirector($params)) {
+                    echo $methods->loginDirector($params);
+                } else {
+                    echo error(ERR_INVALID_PARAMS, $method);
+                }
+            } elseif ($method == "registerDirector") {
+                if ($check->checkDataRegisterDirector($params)) {
+                    echo $methods->registerDirector($params);
                 } else {
                     echo error(ERR_INVALID_PARAMS, $method);
                 }
@@ -45,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo error(ERR_PARSE);
     }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    echo "ready";
+    echo "Director module ready";
 }
 
 
