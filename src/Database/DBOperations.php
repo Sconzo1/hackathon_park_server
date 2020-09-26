@@ -160,4 +160,82 @@ class DBOperations {
         return $query->fetchObject();
 
     }
+
+    public function registerUser($name,$surname,$email,$pass,$birth_date,$id_m_status,$children,$id_gender) {
+        $enc_pass= $this->getHash($pass);
+
+        $sql = 'INSERT INTO `users` SET enc_pass = :enc_pass, email = :email, name = :name, surname = :surname, birth_date = :birth_date, id_m_status = :id_m_status, children = :children, id_gender = :id_gender';
+
+        $query = $this->conn->prepare($sql);
+        $query->execute(
+            array(
+                ':enc_pass' => $enc_pass,
+                ':email' => $email,
+                ':name' => $name,
+                ':surname' => $surname,
+                ':birth_date' => $birth_date,
+                ':id_m_status' => $id_m_status,
+                ':children' => $children,
+                ':id_gender' => $id_gender
+            )
+        );
+
+        if ($query) {
+            $id_user = $this->conn->lastInsertId();
+
+            if (!empty($id_user)) {
+                return true;
+            }
+
+            $this->error(ERR_CANT_ADD_USER);
+            return false;
+        }
+
+        $this->error(ERR_QUERY_USERS);
+        return false;
+    }
+
+    public function loginUser($email, $pass) {
+        $sql = 'SELECT * FROM users
+                INNER JOIN genders ON  users.id_gender = genders.id_gender
+                INNER JOIN marital_states ON users.id_m_status = marital_states.id_m_status
+                WHERE email = :email';
+        $query = $this->conn->prepare($sql);
+        $query->execute(
+            array(
+                ':email' => $email
+            )
+        );
+
+        if ($query) {
+            $data = $query->fetchObject();
+            $db_encrypted_password = $data->enc_pass;
+
+            if ($this->verifyHash($pass."621317", $db_encrypted_password)) {
+                $user["id_user"] = $data->id;
+                $user["name"] = $data->name;
+                $user["surname"] = $data->surname;
+                $user["birth_date"] = $data->birth_date;
+                $user["marital"] = $data->status_name;
+                $user["children"] = $data->children;
+                $user["gender"] = $data->gender_name;
+
+                return $user;
+            }
+
+            return false;
+        }
+
+        $this->error(ERR_QUERY_USERS);
+        return false;
+    }
+
+    public function getNews() {
+        $sql = 'SELECT text, date FROM news ORDER BY date DESC LIMIT 3';
+
+        $query = $this->conn->prepare($sql);
+        $query->execute();
+
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
