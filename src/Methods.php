@@ -59,5 +59,38 @@ class Methods {
         }
     }
 
+    public function registerUser($data) {
+        $db = $this->db;
+        $name = $data->name;
+        $surname = $data->surname;
+        $email = $data->email;
+        $pass = $data->pass;
+        $birth_date = $data->birth_date;
+        $id_m_status = $data->id_m_status;
+        $children = $data->children;
+        $id_gender = $data->id_gender;
+
+        if($this->isEmailValid($email)) {
+            return $this->rpc->makeResultResponse($db->registerUser($name,$surname,$email,$pass,$birth_date,$id_m_status,$children,$id_gender));
+        }
+    }
+
+    public function loginUser($data) {
+        $db = $this->db;
+        $email = $data->email;
+        $pass = $data->pass;
+
+        return $this->rpc->makeResultResponse($db->loginUser($email, $pass));
+    }
+
+    public function getNews() {
+        $db = $this->db;
+
+        return $this->rpc->makeResultResponse($db->getNews());
+    }
+
+    public function isEmailValid($email): bool {
+        return preg_match(PATTERN_EMAIL, $email);
+    }
 
 }
